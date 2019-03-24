@@ -1,7 +1,8 @@
-require("dotenv").config();
+require('dotenv').config();
+const keys = require('./keys.js');
 const axios = require('axios');
 const moment = require('moment');
-const keys = require("./keys.js");
+const fs = require('fs');
 const Spotify = require('node-spotify-api');
 const spotify = new Spotify(keys.spotify);
 
@@ -26,13 +27,13 @@ const controlPanel = (cmd, val) => {
             break;
      
         case 'do-what-it-says':
-    
+            doWhatItSays();
             break;
         default:
             console.log('That is not a recognized command.');
             break;
     }
-}
+};
 
 const axiosCall = (queryUrl, callback) => {
     axios.get(queryUrl).then(callback).catch(error => {
@@ -57,16 +58,30 @@ const axiosCall = (queryUrl, callback) => {
 const concertThis = (artist) => {
     
     const bandsUrl = "https://rest.bandsintown.com/artists/" + artist + "/events?app_id=codingbootcamp";
-    const parseConcertResponse = (response) => response.data.forEach(el => {
-        if (el) {
-            console.log('--------------------------');
-            console.log(`Venue Name: ${el.venue.name}`);
-            console.log(`Location: ${el.venue.city} ${el.venue.region}, ${el.venue.country}`);
-            
-            let date = moment(el.datetime);
-            console.log(`Date: ${date.format("MM/DD/YYYY")}`);
+
+    const parseConcertResponse = (response) => {
+
+        if (!response.data.length) {
+            console.log('No results found');
+        } else {
+            response.data.forEach(el => {
+
+                if (el) {
+                    console.log('--------------------------');
+                    console.log(`Venue Name: ${el.venue.name}`);
+                    if (el.venue.region) {
+                        console.log(`Location: ${el.venue.city} ${el.venue.region}, ${el.venue.country}`);
+                    } else {
+                        console.log(`Location: ${el.venue.city}, ${el.venue.country}`);
+                    }
+                    
+                    
+                    let date = moment(el.datetime);
+                    console.log(`Date: ${date.format("MM/DD/YYYY")}`);
+                }
+            });
         }
-    });
+    };
 
     axiosCall(bandsUrl, parseConcertResponse);
 };
@@ -125,7 +140,17 @@ const spotifySong = (song) => {
             }
         }
     });
-}
+};
+
+const doWhatItSays = () => {
+    fs.readFile('random.txt', 'utf8', (err, data) => {
+        if (err) throw err;
+
+        const dataArr = data.split(",");
+        controlPanel(...dataArr);
+        
+    });
+};
 
 
 
