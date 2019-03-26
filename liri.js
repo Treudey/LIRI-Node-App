@@ -12,6 +12,7 @@ const value = process.argv.slice(3).join('+');
 
 // FUNCTIONS
 const controlPanel = (cmd, val) => {
+    fs.appendFileSync("log.txt",'\n' + ' ' + '\n' + cmd + ' ' + val.replace(/\+/g, ' '));
 
     switch (cmd) {
         case 'concert-this':
@@ -33,6 +34,13 @@ const controlPanel = (cmd, val) => {
             console.log('That is not a recognized command.');
             break;
     }
+};
+
+const logArrToConsoleAndTxtFile = (arr) => {
+    arr.forEach(el => {
+        fs.appendFileSync("log.txt", '\n' + el);
+        console.log(el);
+    });
 };
 
 const axiosCall = (queryUrl, callback) => {
@@ -63,21 +71,24 @@ const concertThis = (artist) => {
 
         if (!response.data.length) {
             console.log('No results found');
+            fs.appendFileSync("log.txt", '\n' + 'No results found');
         } else {
             response.data.forEach(el => {
 
                 if (el) {
-                    console.log('--------------------------');
-                    console.log(`Venue Name: ${el.venue.name}`);
+                    const concertInfoArr = [
+                        '--------------------------',
+                        `Venue Name: ${el.venue.name}`
+                    ];
                     if (el.venue.region) {
-                        console.log(`Location: ${el.venue.city} ${el.venue.region}, ${el.venue.country}`);
+                        concertInfoArr.push(`Location: ${el.venue.city} ${el.venue.region}, ${el.venue.country}`);
                     } else {
-                        console.log(`Location: ${el.venue.city}, ${el.venue.country}`);
+                        concertInfoArr.push(`Location: ${el.venue.city}, ${el.venue.country}`);
                     }
-                    
-                    
-                    let date = moment(el.datetime);
-                    console.log(`Date: ${date.format("MM/DD/YYYY")}`);
+                    const date = moment(el.datetime);
+                    concertInfoArr.push(`Date: ${date.format("MM/DD/YYYY")}`);
+
+                    logArrToConsoleAndTxtFile(concertInfoArr);
                 }
             });
         }
@@ -94,15 +105,18 @@ const movieThis = (movie) => {
     const movieUrl = "http://www.omdbapi.com/?t=" + movie + "&y=&plot=short&apikey=trilogy";
     
     const parseMovieResponse = (response) => {
-        console.log('--------------------------');
-        console.log('Title:', response.data.Title);
-        console.log('Release Year:', response.data.Year);
-        console.log('IMDB Rating:', response.data.Ratings[0].Value);
-        console.log('Rotten Tomatoes Rating:', response.data.Ratings[1].Value);
-        console.log('Country:', response.data.Country);
-        console.log('Language:', response.data.Language);
-        console.log('Starring:', response.data.Actors);
-        console.log('Plot:', response.data.Plot);
+        const movieInfoArr = [
+            '--------------------------',
+            'Title: ' + response.data.Title,
+            'Release Year: ' + response.data.Year,
+            'IMDB Rating: ' + response.data.Ratings[0].Value,
+            'Rotten Tomatoes Rating: ' + response.data.Ratings[1].Value,
+            'Country: ' + response.data.Country,
+            'Language: ' + response.data.Language,
+            'Starring: ' + response.data.Actors,
+            'Plot: ' + response.data.Plot
+        ];
+        logArrToConsoleAndTxtFile(movieInfoArr);
     };
 
     axiosCall(movieUrl, parseMovieResponse);
@@ -128,16 +142,20 @@ const spotifySong = (song) => {
             } else {
                 artist = artistInfo[0].name;
             }
-        
-            console.log('--------------------------');
-            console.log('Artist(s):', artist);
-            console.log('Title:', item.name);
-            console.log('Album:', item.album.name);
+
+            const songInfoArr = [
+                '--------------------------',
+                'Artist(s): ' + artist,
+                'Title: ' + item.name,
+                'Album: ' + item.album.name
+            ];
             if (item.preview_url) {
-                console.log('Sample:', item.preview_url);
+                songInfoArr.push('Sample: ' + item.preview_url);
             } else {
-                console.log('Sample not available');
+                songInfoArr.push('Sample not available');
             }
+
+            logArrToConsoleAndTxtFile(songInfoArr);
         }
     });
 };
@@ -151,9 +169,6 @@ const doWhatItSays = () => {
         
     });
 };
-
-
-
 
 // MAIN PROCESS
 controlPanel(command, value);
