@@ -36,9 +36,14 @@ const controlPanel = (cmd, val) => {
     }
 };
 
-const logArrToConsoleAndTxtFile = (arr) => {
+const writeArrToTxtFile = (arr) => {
     arr.forEach(el => {
         fs.appendFileSync("log.txt", '\n' + el);
+    });
+};
+
+const logArrToConsole = (arr) => {
+    arr.forEach(el => {
         console.log(el);
     });
 };
@@ -73,8 +78,8 @@ const concertThis = (artist) => {
             console.log('No results found');
             fs.appendFileSync("log.txt", '\n' + 'No results found');
         } else {
-            response.data.forEach(el => {
-
+            for (let i = 0; i < 5; i++) {
+                const el = response.data[i];
                 if (el) {
                     const concertInfoArr = [
                         '--------------------------',
@@ -87,10 +92,11 @@ const concertThis = (artist) => {
                     }
                     const date = moment(el.datetime);
                     concertInfoArr.push(`Date: ${date.format("MM/DD/YYYY")}`);
-
-                    logArrToConsoleAndTxtFile(concertInfoArr);
+                    
+                    logArrToConsole(concertInfoArr);
+                    writeArrToTxtFile(concertInfoArr);
                 }
-            });
+            }
         }
     };
 
@@ -116,7 +122,8 @@ const movieThis = (movie) => {
             'Starring: ' + response.data.Actors,
             'Plot: ' + response.data.Plot
         ];
-        logArrToConsoleAndTxtFile(movieInfoArr);
+        logArrToConsole(movieInfoArr);
+        writeArrToTxtFile(movieInfoArr);
     };
 
     axiosCall(movieUrl, parseMovieResponse);
@@ -155,7 +162,8 @@ const spotifySong = (song) => {
                 songInfoArr.push('Sample not available');
             }
 
-            logArrToConsoleAndTxtFile(songInfoArr);
+            logArrToConsole(songInfoArr);
+            writeArrToTxtFile(songInfoArr);
         }
     });
 };
